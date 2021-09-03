@@ -546,7 +546,10 @@ if(USE_GCC OR USE_CLANG)
   endif()
 
   if(APPLE)
-    list(APPEND EXTRA_LDFLAGS "-Wl,-undefined,error")
+    # @dbotha: -undefined flag is not compatible if Bitcode is enabled for iOS
+    if (NOT IOS OR NOT ENABLE_BITCODE_INT)
+      list(APPEND EXTRA_LDFLAGS "-Wl,-undefined,error")
+    endif()
     list(APPEND EXTRA_LDFLAGS "-Wl,-compatibility_version,${DYLIB_COMPATIBILITY_VERSION}")
     list(APPEND EXTRA_LDFLAGS "-Wl,-current_version,${DYLIB_CURRENT_VERSION}")
   elseif(NOT OPENBSD)
