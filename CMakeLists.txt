@@ -547,11 +547,11 @@ if(USE_GCC OR USE_CLANG)
 
   if(APPLE)
     # @dbotha: -undefined flag is not compatible if Bitcode is enabled for iOS
-    if (NOT IOS OR NOT ENABLE_BITCODE_INT)
+    if ((NOT IOS AND NOT TVOS) OR NOT ENABLE_BITCODE_INT)
       list(APPEND EXTRA_LDFLAGS "-Wl,-undefined,error")
     endif()
     # @dbotha: linking iconv is required on iOS so add this to the linker flags
-    if (SDL_STATIC AND IOS)
+    if (SDL_STATIC AND (IOS OR TVOS))
       list(APPEND EXTRA_LIBS iconv)
     endif()
     list(APPEND EXTRA_LDFLAGS "-Wl,-compatibility_version,${DYLIB_COMPATIBILITY_VERSION}")
@@ -1806,7 +1806,7 @@ elseif(APPLE)
     if(IOS OR TVOS)
       file(GLOB JOYSTICK_SOURCES ${SDL2_SOURCE_DIR}/src/joystick/iphoneos/*.m ${SDL2_SOURCE_DIR}/src/joystick/steam/*.c)
       set(SDL_JOYSTICK_MFI 1)
-      if(IOS)
+      if(IOS AND NOT TVOS)
         set(SDL_FRAMEWORK_COREMOTION 1)
       endif()
       set(SDL_FRAMEWORK_GAMECONTROLLER 1)
@@ -1876,7 +1876,7 @@ elseif(APPLE)
   endif()
 
   if(SDL_SENSOR)
-    if(IOS)
+    if(IOS AND NOT TVOS)
       set(SDL_SENSOR_COREMOTION 1)
       set(HAVE_SDL_SENSORS TRUE)
       file(GLOB SENSOR_SOURCES ${SDL2_SOURCE_DIR}/src/sensor/coremotion/*.m)
@@ -1935,7 +1935,12 @@ elseif(APPLE)
         }
         " HAVE_FRAMEWORK_METAL)
       set(CMAKE_REQUIRED_FLAGS ${ORIG_CMAKE_REQUIRED_FLAGS})
-      if(HAVE_FRAMEWORK_METAL)
+      # @dbotha check_c_source_compiles() fails to reliably detect Metal in
+      # certain situations (i.e. for me it doesn't work when using the ios-cmake
+      # toolchain). See https://github.com/libsdl-org/SDL/issues/3893
+      # To hack around this I allow forcefully including metal when I know it's
+      # safe to so by setting the flag 'FORCE_HAVE_FRAMEWORK_METAL'
+      if(HAVE_FRAMEWORK_METAL OR FORCE_HAVE_FRAMEWORK_METAL)
         set(SDL_FRAMEWORK_METAL 1)
         set(SDL_FRAMEWORK_QUARTZCORE 1)
       else()
