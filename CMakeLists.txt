@@ -550,8 +550,8 @@ if(USE_GCC OR USE_CLANG)
     if ((NOT IOS AND NOT TVOS) OR NOT ENABLE_BITCODE_INT)
       list(APPEND EXTRA_LDFLAGS "-Wl,-undefined,error")
     endif()
-    # @dbotha: linking iconv is required on iOS so add this to the linker flags
-    if (SDL_STATIC AND (IOS OR TVOS))
+    # @dbotha: linking iconv is required on iOS/MacOS so add to the linker flags
+    if (SDL_STATIC AND (IOS OR TVOS OR MACOS))
       list(APPEND EXTRA_LIBS iconv)
     endif()
     list(APPEND EXTRA_LDFLAGS "-Wl,-compatibility_version,${DYLIB_COMPATIBILITY_VERSION}")
