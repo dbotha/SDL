@@ -2625,7 +2625,11 @@ endif()
 
 if(ANDROID)
   if(HAVE_HIDAPI)
-    add_library(hidapi SHARED ${SDL2_SOURCE_DIR}/src/hidapi/android/hid.cpp)
+    if (BUILD_SHARED_LIBS)
+      add_library(hidapi SHARED ${SDL2_SOURCE_DIR}/src/hidapi/android/hid.cpp)
+    else()
+      add_library(hidapi STATIC ${SDL2_SOURCE_DIR}/src/hidapi/android/hid.cpp)
+    endif()
     # alias target for in-tree builds
     add_library(SDL2::hidapi ALIAS hidapi)
   endif()
