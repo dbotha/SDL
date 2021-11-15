@@ -944,7 +944,43 @@ SDL_JoystickHasLED(SDL_Joystick *joystick)
 
     SDL_LockJoysticks();
 
-    result = joystick->driver->HasLED(joystick);
+    result = (joystick->driver->GetCapabilities(joystick) & SDL_JOYCAP_LED) != 0;
+
+    SDL_UnlockJoysticks();
+
+    return result;
+}
+
+SDL_bool
+SDL_JoystickHasRumble(SDL_Joystick *joystick)
+{
+    SDL_bool result;
+
+    if (!SDL_PrivateJoystickValid(joystick)) {
+        return SDL_FALSE;
+    }
+
+    SDL_LockJoysticks();
+
+    result = (joystick->driver->GetCapabilities(joystick) & SDL_JOYCAP_RUMBLE) != 0;
+
+    SDL_UnlockJoysticks();
+
+    return result;
+}
+
+SDL_bool
+SDL_JoystickHasRumbleTriggers(SDL_Joystick *joystick)
+{
+    SDL_bool result;
+
+    if (!SDL_PrivateJoystickValid(joystick)) {
+        return SDL_FALSE;
+    }
+
+    SDL_LockJoysticks();
+
+    result = (joystick->driver->GetCapabilities(joystick) & SDL_JOYCAP_RUMBLE_TRIGGERS) != 0;
 
     SDL_UnlockJoysticks();
 
@@ -1344,7 +1380,7 @@ SDL_PrivateJoystickAxis(SDL_Joystick *joystick, Uint8 axis, Sint16 value)
         info->value = value;
         info->zero = value;
         info->has_initial_value = SDL_TRUE;
-    } else if (value == info->value) {
+    } else if (value == info->value && !info->sending_initial_value) {
         return 0;
     } else {
         info->has_second_value = SDL_TRUE;
@@ -1356,15 +1392,17 @@ SDL_PrivateJoystickAxis(SDL_Joystick *joystick, Uint8 axis, Sint16 value)
             return 0;
         }
         info->sent_initial_value = SDL_TRUE;
-        info->value = ~value; /* Just so we pass the check above */
+        info->sending_initial_value = SDL_TRUE;
         SDL_PrivateJoystickAxis(joystick, axis, info->initial_value);
+        info->sending_initial_value = SDL_FALSE;
     }
 
     /* We ignore events if we don't have keyboard focus, except for centering
      * events.
      */
     if (SDL_PrivateJoystickShouldIgnoreEvent()) {
-        if ((value > info->zero && value >= info->value) ||
+        if (info->sending_initial_value ||
+            (value > info->zero && value >= info->value) ||
             (value < info->zero && value <= info->value)) {
             return 0;
         }
@@ -1757,8 +1795,13 @@ SDL_CreateJoystickName(Uint16 vendor, Uint16 product, const char *vendor_name, c
         size_t prefixlen = SDL_strlen(replacements[i].prefix);
         if (SDL_strncasecmp(name, replacements[i].prefix, prefixlen) == 0) {
             size_t replacementlen = SDL_strlen(replacements[i].replacement);
-            SDL_memcpy(name, replacements[i].replacement, replacementlen);
-            SDL_memmove(name+replacementlen, name+prefixlen, (len-prefixlen+1));
+            if (replacementlen <= prefixlen) {
+                SDL_memcpy(name, replacements[i].replacement, replacementlen);
+                SDL_memmove(name+replacementlen, name+prefixlen, (len-prefixlen)+1);
+                len -= (prefixlen - replacementlen);
+            } else {
+                /* FIXME: Need to handle the expand case by reallocating the string */
+            }
             break;
         }
     }
@@ -1768,11 +1811,9 @@ SDL_CreateJoystickName(Uint16 vendor, Uint16 product, const char *vendor_name, c
         int matchlen = PrefixMatch(name, &name[i]);
         if (matchlen > 0 && name[matchlen-1] == ' ') {
             SDL_memmove(name, name+matchlen, len-matchlen+1);
-            len -= matchlen;
             break;
         } else if (matchlen > 0 && name[matchlen] == ' ') {
             SDL_memmove(name, name+matchlen+1, len-matchlen);
-            len -= (matchlen + 1);
             break;
         }
     }
@@ -2393,8 +2434,9 @@ SDL_bool SDL_ShouldIgnoreJoystick(const char *name, SDL_JoystickGUID guid)
         /* Additional entries                                            */
         /*****************************************************************/
 
-        /* Anne Pro II Keyboard */
         MAKE_VIDPID(0x04d9, 0x8009),  /* OBINLB USB-HID Keyboard */
+        MAKE_VIDPID(0x0b05, 0x1958),  /* ROG Chakram Mouse */
+        MAKE_VIDPID(0x26ce, 0x01a2),  /* ASRock LED Controller */
     };
 
     unsigned int i;
@@ -2717,6 +2759,13 @@ int SDL_PrivateJoystickTouchpad(SDL_Joystick *joystick, int touchpad, int finger
     }
 #endif
 
+    /* We ignore events if we don't have keyboard focus, except for touch release */
+    if (SDL_PrivateJoystickShouldIgnoreEvent()) {
+        if (event_type != SDL_CONTROLLERTOUCHPADUP) {
+            return 0;
+        }
+    }
+
     /* Update internal joystick state */
     finger_info->state = state;
     finger_info->x = x;
@@ -2745,6 +2794,11 @@ int SDL_PrivateJoystickSensor(SDL_Joystick *joystick, SDL_SensorType type, const
 {
     int i;
     int posted = 0;
+
+    /* We ignore events if we don't have keyboard focus */
+    if (SDL_PrivateJoystickShouldIgnoreEvent()) {
+        return 0;
+    }
 
     for (i = 0; i < joystick->nsensors; ++i) {
         SDL_JoystickSensorInfo *sensor = &joystick->sensors[i];
