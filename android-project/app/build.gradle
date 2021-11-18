@@ -8,26 +8,20 @@ else {
 }
 
 android {
-    compileSdkVersion 26
+    compileSdkVersion 30
+    dexOptions {
+    // @dbotha: bump available RAM as other we frequently see builds fail due to
+    //          out of memory errors
+        javaMaxHeapSize "4g"
+    }
     defaultConfig {
         if (buildAsApplication) {
             applicationId "org.libsdl.app"
         }
         minSdkVersion 16
-        targetSdkVersion 26
+        targetSdkVersion 30
         versionCode 1
         versionName "1.0"
-        externalNativeBuild {
-            ndkBuild {
-                arguments "APP_PLATFORM=android-16"
-                abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
-            }
-            // cmake {
-            //     arguments "-DANDROID_APP_PLATFORM=android-16", "-DANDROID_STL=c++_static"
-            //     // abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
-            //     abiFilters 'arm64-v8a'
-            // }
-        }
     }
     buildTypes {
         release {
@@ -39,15 +33,6 @@ android {
         sourceSets.main {
             jniLibs.srcDir 'libs'
         }
-        externalNativeBuild {
-            ndkBuild {
-                path 'jni/Android.mk'
-            }
-            // cmake {
-            //     path 'jni/CMakeLists.txt'
-            // }
-        }
-       
     }
     lintOptions {
         abortOnError false
