@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -47,6 +47,7 @@ typedef struct {
 } SDL_WaylandCursorTheme;
 
 typedef struct {
+    SDL_bool initializing;
     struct wl_display *display;
     int display_disconnected;
     struct wl_registry *registry;
@@ -89,11 +90,15 @@ typedef struct {
 } SDL_VideoData;
 
 typedef struct {
+    SDL_VideoData *videodata;
     struct wl_output *output;
+    uint32_t registry_id;
     float scale_factor;
     int x, y, width, height, refresh, transform;
+    SDL_DisplayOrientation orientation;
     int physical_width, physical_height;
     float ddpi, hdpi, vdpi;
+    int index;
     SDL_VideoDisplay placeholder;
     SDL_bool done;
 } SDL_WaylandOutputData;

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -432,7 +432,7 @@ SDL_DINPUT_JoystickInit(void)
 static BOOL CALLBACK
 EnumJoystickDetectCallback(LPCDIDEVICEINSTANCE pDeviceInstance, LPVOID pContext)
 {
-#define CHECK(exp) { if(!(exp)) goto err; }
+#define CHECK(expression) { if(!(expression)) goto err; }
     JoyStick_DeviceData *pNewJoystick = NULL;
     JoyStick_DeviceData *pPrevJoystick = NULL;
     Uint16 *guid16;
@@ -553,7 +553,7 @@ typedef struct
 static BOOL CALLBACK
 EnumJoystickPresentCallback(LPCDIDEVICEINSTANCE pDeviceInstance, LPVOID pContext)
 {
-#define CHECK(exp) { if(!(exp)) goto err; }
+#define CHECK(expression) { if(!(expression)) goto err; }
     Joystick_PresentData *pData = (Joystick_PresentData *)pContext;
     Uint16 vendor = 0;
     Uint16 product = 0;
@@ -584,6 +584,10 @@ SDL_bool
 SDL_DINPUT_JoystickPresent(Uint16 vendor_id, Uint16 product_id, Uint16 version_number)
 {
     Joystick_PresentData data;
+
+    if (dinput == NULL) {
+        return SDL_FALSE;
+    }
 
     data.vendor = vendor_id;
     data.product = product_id;

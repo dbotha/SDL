@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -142,6 +142,10 @@
 # if __has_include(<immintrin.h>)
 #   define HAVE_IMMINTRIN_H 1
 # endif
+#endif
+
+#if (MAC_OS_X_VERSION_MAX_ALLOWED >= 1070)
+#define HAVE_O_CLOEXEC 1
 #endif
 
 #define HAVE_GCC_ATOMICS 1

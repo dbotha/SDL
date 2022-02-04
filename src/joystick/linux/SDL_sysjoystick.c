@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -112,7 +112,7 @@ typedef struct SDL_joylist_item
     SDL_GamepadMapping *mapping;
 } SDL_joylist_item;
 
-static SDL_bool SDL_classic_joysticks = SDL_TRUE;
+static SDL_bool SDL_classic_joysticks = SDL_FALSE;
 static SDL_joylist_item *SDL_joylist = NULL;
 static SDL_joylist_item *SDL_joylist_tail = NULL;
 static int numjoysticks = 0;

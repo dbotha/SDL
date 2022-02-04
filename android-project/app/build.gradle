@@ -8,7 +8,7 @@ else {
 }
 
 android {
-    compileSdkVersion 30
+    compileSdkVersion 31
     dexOptions {
     // @dbotha: bump available RAM as other we frequently see builds fail due to
     //          out of memory errors
@@ -19,7 +19,7 @@ android {
             applicationId "org.libsdl.app"
         }
         minSdkVersion 16
-        targetSdkVersion 30
+        targetSdkVersion 31
         versionCode 1
         versionName "1.0"
     }

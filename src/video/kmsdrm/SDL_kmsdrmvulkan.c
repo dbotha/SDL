@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -182,7 +182,7 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
                                   VkInstance instance,
                                   VkSurfaceKHR *surface)
 {
-    VkPhysicalDevice gpu;
+    VkPhysicalDevice gpu = NULL;
     uint32_t gpu_count;
     uint32_t display_count;
     uint32_t mode_count;

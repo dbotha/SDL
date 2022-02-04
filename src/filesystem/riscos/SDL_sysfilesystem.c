@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2019 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -37,7 +37,7 @@
 static char *
 SDL_unixify_std(const char *ro_path, char *buffer, size_t buf_len, int filetype)
 {
-    const char *const in_buf = buffer; /* = NULL if we malloc the buffer.  */
+    const char *const in_buf = buffer; /* = NULL if we allocate the buffer.  */
 
     if (!buffer) {
         /* This matches the logic in __unixify, with an additional byte for the
@@ -181,7 +181,7 @@ SDL_GetPrefPath(const char *org, const char *app)
     dir = (char *) SDL_malloc(len);
     if (!dir) {
         SDL_OutOfMemory();
-        free(canon);
+        SDL_free(canon);
         return NULL;
     }
 

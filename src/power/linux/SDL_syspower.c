@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -51,7 +51,7 @@ open_power_file(const char *base, const char *node, const char *key)
         return -1;  /* oh well. */
     }
 
-    snprintf(path, pathlen, "%s/%s/%s", base, node, key);
+    SDL_snprintf(path, pathlen, "%s/%s/%s", base, node, key);
     fd = open(path, O_RDONLY | O_CLOEXEC);
     SDL_stack_free(path);
     return fd;
@@ -565,6 +565,8 @@ check_upower_device(DBusConnection *conn, const char *path, SDL_PowerState *stat
         return;
     } else if (!ui32) {
         st = SDL_POWERSTATE_NO_BATTERY;
+    } else if (!SDL_DBus_CallMethodOnConnection(conn, UPOWER_DBUS_NODE, path, UPOWER_DEVICE_DBUS_INTERFACE, "Refresh", DBUS_TYPE_INVALID, DBUS_TYPE_INVALID)) {
+	return;
     } else if (!SDL_DBus_QueryPropertyOnConnection(conn, UPOWER_DBUS_NODE, path, UPOWER_DEVICE_DBUS_INTERFACE, "State", DBUS_TYPE_UINT32, &ui32)) {
         st = SDL_POWERSTATE_UNKNOWN;  /* uh oh */
     } else if (ui32 == 1) {  /* 1 == charging */

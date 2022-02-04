@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -45,10 +45,9 @@ typedef enum
     GLES2_SHADER_FRAGMENT_TEXTURE_NV21_JPEG,
     GLES2_SHADER_FRAGMENT_TEXTURE_NV21_BT601,
     GLES2_SHADER_FRAGMENT_TEXTURE_NV21_BT709,
-    GLES2_SHADER_FRAGMENT_TEXTURE_EXTERNAL_OES
+    GLES2_SHADER_FRAGMENT_TEXTURE_EXTERNAL_OES,
+    GLES2_SHADER_COUNT
 } GLES2_ShaderType;
-
-#define GLES2_SHADER_COUNT  16
 
 const Uint8 *GLES2_GetShader(GLES2_ShaderType type);
 

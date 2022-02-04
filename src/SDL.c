@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -23,15 +23,15 @@
 #if defined(__WIN32__)
 #include "core/windows/SDL_windows.h"
 #elif defined(__OS2__)
-#include <stdlib.h> /* For _exit() */
+#include <stdlib.h> /* _exit() */
 #elif !defined(__WINRT__)
-#include <unistd.h> /* For _exit(), etc. */
+#include <unistd.h> /* _exit(), etc. */
 #endif
 #if defined(__OS2__)
 #include "core/os2/SDL_os2.h"
-#endif
 #if SDL_THREAD_OS2
 #include "thread/os2/SDL_systls_c.h"
+#endif
 #endif
 
 /* this checks for HAVE_DBUS_DBUS_H internally. */
@@ -151,10 +151,9 @@ int
 SDL_InitSubSystem(Uint32 flags)
 {
     Uint32 flags_initialized = 0;
-    
+
     if (!SDL_MainIsReady) {
-        SDL_SetError("Application didn't initialize properly, did you include SDL_main.h in the file containing your main() function?");
-        return -1;
+        return SDL_SetError("Application didn't initialize properly, did you include SDL_main.h in the file containing your main() function?");
     }
 
     /* Clear the error message */
@@ -169,8 +168,8 @@ SDL_InitSubSystem(Uint32 flags)
         flags |= SDL_INIT_JOYSTICK;
     }
 
-    if ((flags & (SDL_INIT_VIDEO|SDL_INIT_JOYSTICK))) {
-        /* video or joystick implies events */
+    if ((flags & (SDL_INIT_VIDEO|SDL_INIT_JOYSTICK|SDL_INIT_AUDIO))) {
+        /* video or joystick or audio implies events */
         flags |= SDL_INIT_EVENTS;
     }
 
@@ -208,7 +207,7 @@ SDL_InitSubSystem(Uint32 flags)
 
     /* Initialize the timer subsystem */
     if ((flags & SDL_INIT_TIMER)){
-#if !SDL_TIMERS_DISABLED
+#if !SDL_TIMERS_DISABLED && !SDL_TIMER_DUMMY
         if (SDL_PrivateShouldInitSubsystem(SDL_INIT_TIMER)) {
             if (SDL_TimerInit() < 0) {
                 goto quit_and_error;
@@ -318,7 +317,7 @@ SDL_InitSubSystem(Uint32 flags)
     }
 
     return (0);
-    
+
 quit_and_error:
     SDL_QuitSubSystem(flags_initialized);
     return (-1);
@@ -333,10 +332,10 @@ SDL_Init(Uint32 flags)
 void
 SDL_QuitSubSystem(Uint32 flags)
 {
+#if defined(__OS2__)
 #if SDL_THREAD_OS2
     SDL_OS2TLSFree(); /* thread/os2/SDL_systls.c */
 #endif
-#if defined(__OS2__)
     SDL_OS2Quit();
 #endif
 
@@ -402,7 +401,7 @@ SDL_QuitSubSystem(Uint32 flags)
     }
 #endif
 
-#if !SDL_TIMERS_DISABLED
+#if !SDL_TIMERS_DISABLED && !SDL_TIMER_DUMMY
     if ((flags & SDL_INIT_TIMER)) {
         if (SDL_PrivateShouldQuitSubsystem(SDL_INIT_TIMER)) {
             SDL_TimerQuit();
@@ -506,7 +505,7 @@ SDL_GetRevisionNumber(void)
 
 /* Get the name of the platform */
 const char *
-SDL_GetPlatform()
+SDL_GetPlatform(void)
 {
 #if __AIX__
     return "AIX";
@@ -568,7 +567,7 @@ SDL_GetPlatform()
 }
 
 SDL_bool
-SDL_IsTablet()
+SDL_IsTablet(void)
 {
 #if __ANDROID__
     extern SDL_bool SDL_IsAndroidTablet(void);

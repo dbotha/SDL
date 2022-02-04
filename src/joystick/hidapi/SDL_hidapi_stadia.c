@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -305,6 +305,7 @@ HIDAPI_DriverStadia_FreeDevice(SDL_HIDAPI_Device *device)
 SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverStadia =
 {
     SDL_HINT_JOYSTICK_HIDAPI_STADIA,
+    SDL_TRUE,
     SDL_TRUE,
     HIDAPI_DriverStadia_IsSupportedDevice,
     HIDAPI_DriverStadia_GetDeviceName,

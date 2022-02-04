@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -39,6 +39,11 @@
 
 /* For GET_X_LPARAM, GET_Y_LPARAM. */
 #include <windowsx.h>
+
+/* For WM_TABLET_QUERYSYSTEMGESTURESTATUS et. al. */
+#if HAVE_TPCSHRD_H
+#include <tpcshrd.h>
+#endif /* HAVE_TPCSHRD_H */
 
 /* #define WMMSG_DEBUG */
 #ifdef WMMSG_DEBUG
@@ -306,6 +311,9 @@ WIN_CheckWParamMouseButtons(WPARAM wParam, SDL_WindowData *data, SDL_MouseID mou
 static void
 WIN_CheckRawMouseButtons(ULONG rawButtons, SDL_WindowData *data, SDL_MouseID mouseID)
 {
+    // Add a flag to distinguish raw mouse buttons from wParam above
+    rawButtons |= 0x8000000;
+
     if (rawButtons != data->mouse_button_flags) {
         Uint32 mouseFlags = SDL_GetMouseState(NULL, NULL);
         SDL_bool swapButtons = GetSystemMetrics(SM_SWAPBUTTON) != 0;
@@ -692,6 +700,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
     case WM_SETFOCUS:
     case WM_KILLFOCUS:
+    case WM_ENTERIDLE:
         {
             /* Update the focus in case it's changing between top-level windows in the same application */
             WIN_UpdateFocus(data->window);
@@ -728,8 +737,8 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 }
             }
         }
-        /* don't break here, fall through to check the wParam like the button presses */
-        SDL_FALLTHROUGH;
+        break;
+
     case WM_LBUTTONUP:
     case WM_RBUTTONUP:
     case WM_MBUTTONUP:
@@ -780,7 +789,11 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     (GetMouseMessageSource() == SDL_MOUSE_EVENT_SOURCE_TOUCH || (GetMessageExtraInfo() & 0x82) == 0x82)) {
                     break;
                 }
-                mouseID = (SDL_MouseID)(uintptr_t)inp.header.hDevice;
+                /* We do all of our mouse state checking against mouse ID 0
+                 * We would only use the actual hDevice if we were tracking
+                 * all mouse motion independently, and never using mouse ID 0.
+                 */
+                mouseID = 0; /* (SDL_MouseID)(uintptr_t)inp.header.hDevice; */
                 rawmouse = &inp.data.mouse;
 
                 if ((rawmouse->usFlags & 0x01) == MOUSE_MOVE_RELATIVE) {
@@ -1277,6 +1290,25 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         }
         break;
 
+#if HAVE_TPCSHRD_H
+
+    case WM_TABLET_QUERYSYSTEMGESTURESTATUS:
+        /* See https://msdn.microsoft.com/en-us/library/windows/desktop/bb969148(v=vs.85).aspx .
+         * If we're handling our own touches, we don't want any gestures.
+         * Not all of these settings are documented.
+         * The use of the undocumented ones was suggested by https://github.com/bjarkeck/GCGJ/blob/master/Monogame/Windows/WinFormsGameForm.cs . */
+        return TABLET_DISABLE_PRESSANDHOLD |    /*  disables press and hold (right-click) gesture */
+            TABLET_DISABLE_PENTAPFEEDBACK |     /*  disables UI feedback on pen up (waves) */
+            TABLET_DISABLE_PENBARRELFEEDBACK |  /*  disables UI feedback on pen button down (circle) */
+            TABLET_DISABLE_TOUCHUIFORCEON |
+            TABLET_DISABLE_TOUCHUIFORCEOFF |
+            TABLET_DISABLE_TOUCHSWITCH |
+            TABLET_DISABLE_FLICKS |             /*  disables pen flicks (back, forward, drag down, drag up) */
+            TABLET_DISABLE_SMOOTHSCROLLING |
+            TABLET_DISABLE_FLICKFALLBACKKEYS;
+
+#endif /* HAVE_TPCSHRD_H */
+
     case WM_DROPFILES:
         {
             UINT i;
@@ -1472,6 +1504,7 @@ WIN_PumpEvents(_THIS)
     MSG msg;
     DWORD end_ticks = GetTickCount() + 1;
     int new_messages = 0;
+    SDL_Window *focusWindow;
 
     if (g_WindowsEnableMessageLoop) {
         while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
@@ -1519,12 +1552,18 @@ WIN_PumpEvents(_THIS)
     if ((keystate[SDL_SCANCODE_RSHIFT] == SDL_PRESSED) && !(GetKeyState(VK_RSHIFT) & 0x8000)) {
         SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_RSHIFT);
     }
-    /* The Windows key state gets lost when using Windows+Space or Windows+G shortcuts */
-    if ((keystate[SDL_SCANCODE_LGUI] == SDL_PRESSED) && !(GetKeyState(VK_LWIN) & 0x8000)) {
-        SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_LGUI);
-    }
-    if ((keystate[SDL_SCANCODE_RGUI] == SDL_PRESSED) && !(GetKeyState(VK_RWIN) & 0x8000)) {
-        SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_RGUI);
+
+    /* The Windows key state gets lost when using Windows+Space or Windows+G shortcuts and
+       not grabbing the keyboard. Note: If we *are* grabbing the keyboard, GetKeyState()
+       will return inaccurate results for VK_LWIN and VK_RWIN but we don't need it anyway. */
+    focusWindow = SDL_GetKeyboardFocus();
+    if (!focusWindow || !(focusWindow->flags & SDL_WINDOW_KEYBOARD_GRABBED)) {
+        if ((keystate[SDL_SCANCODE_LGUI] == SDL_PRESSED) && !(GetKeyState(VK_LWIN) & 0x8000)) {
+            SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_LGUI);
+        }
+        if ((keystate[SDL_SCANCODE_RGUI] == SDL_PRESSED) && !(GetKeyState(VK_RWIN) & 0x8000)) {
+            SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_RGUI);
+        }
     }
 
     /* Update the clipping rect in case someone else has stolen it */
@@ -1540,6 +1579,14 @@ LPTSTR SDL_Appname = NULL;
 Uint32 SDL_Appstyle = 0;
 HINSTANCE SDL_Instance = NULL;
 
+static void WIN_CleanRegisterApp(WNDCLASSEX wcex)
+{
+    if (wcex.hIcon) DestroyIcon(wcex.hIcon);
+    if (wcex.hIconSm) DestroyIcon(wcex.hIconSm);
+    SDL_free(SDL_Appname);
+    SDL_Appname = NULL;
+}
+
 /* Register the class for this application */
 int
 SDL_RegisterApp(const char *name, Uint32 style, void *hInst)
@@ -1553,19 +1600,16 @@ SDL_RegisterApp(const char *name, Uint32 style, void *hInst)
         ++app_registered;
         return (0);
     }
-    if (!name && !SDL_Appname) {
+    SDL_assert(SDL_Appname == NULL);
+    if (!name) {
         name = "SDL_app";
 #if defined(CS_BYTEALIGNCLIENT) || defined(CS_OWNDC)
-        SDL_Appstyle = (CS_BYTEALIGNCLIENT | CS_OWNDC);
+        style = (CS_BYTEALIGNCLIENT | CS_OWNDC);
 #endif
-        SDL_Instance = hInst ? hInst : GetModuleHandle(NULL);
     }
-
-    if (name) {
-        SDL_Appname = WIN_UTF8ToString(name);
-        SDL_Appstyle = style;
-        SDL_Instance = hInst ? hInst : GetModuleHandle(NULL);
-    }
+    SDL_Appname = WIN_UTF8ToString(name);
+    SDL_Appstyle = style;
+    SDL_Instance = hInst ? hInst : GetModuleHandle(NULL);
 
     /* Register the application class */
     wcex.cbSize         = sizeof(WNDCLASSEX);
@@ -1596,6 +1640,7 @@ SDL_RegisterApp(const char *name, Uint32 style, void *hInst)
     }
 
     if (!RegisterClassEx(&wcex)) {
+        WIN_CleanRegisterApp(wcex);
         return SDL_SetError("Couldn't register application class");
     }
 
@@ -1615,14 +1660,14 @@ SDL_UnregisterApp()
     }
     --app_registered;
     if (app_registered == 0) {
+        /* Ensure the icons are initialized. */
+        wcex.hIcon = NULL;
+        wcex.hIconSm = NULL;
         /* Check for any registered window classes. */
         if (GetClassInfoEx(SDL_Instance, SDL_Appname, &wcex)) {
             UnregisterClass(SDL_Appname, SDL_Instance);
-            if (wcex.hIcon) DestroyIcon(wcex.hIcon);
-            if (wcex.hIconSm) DestroyIcon(wcex.hIconSm);
         }
-        SDL_free(SDL_Appname);
-        SDL_Appname = NULL;
+        WIN_CleanRegisterApp(wcex);
     }
 }
 

@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -72,7 +72,7 @@ main(int argc, char *argv[])
     /* Start the timer */
     desired = 0;
     if (argv[1]) {
-        desired = atoi(argv[1]);
+        desired = SDL_atoi(argv[1]);
     }
     if (desired == 0) {
         desired = DEFAULT_RESOLUTION;

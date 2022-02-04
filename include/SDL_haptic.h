@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -76,7 +76,7 @@
  *    }
  *
  *    // Create the effect
- *    memset( &effect, 0, sizeof(SDL_HapticEffect) ); // 0 is safe default
+ *    SDL_memset( &effect, 0, sizeof(SDL_HapticEffect) ); // 0 is safe default
  *    effect.type = SDL_HAPTIC_SINE;
  *    effect.periodic.direction.type = SDL_HAPTIC_POLAR; // Polar coordinates
  *    effect.periodic.direction.dir[0] = 18000; // Force comes from south

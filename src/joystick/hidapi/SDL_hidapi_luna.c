@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -437,6 +437,7 @@ HIDAPI_DriverLuna_FreeDevice(SDL_HIDAPI_Device *device)
 SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverLuna =
 {
     SDL_HINT_JOYSTICK_HIDAPI_LUNA,
+    SDL_TRUE,
     SDL_TRUE,
     HIDAPI_DriverLuna_IsSupportedDevice,
     HIDAPI_DriverLuna_GetDeviceName,

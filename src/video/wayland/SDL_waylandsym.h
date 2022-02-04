@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -84,6 +84,10 @@ SDL_WAYLAND_MODULE(WAYLAND_CLIENT_1_18)
 SDL_WAYLAND_SYM(void, wl_proxy_set_tag, (struct wl_proxy *, const char * const *))
 SDL_WAYLAND_SYM(const char * const *, wl_proxy_get_tag, (struct wl_proxy *))
 
+SDL_WAYLAND_MODULE(WAYLAND_CLIENT_1_20)
+SDL_WAYLAND_SYM(struct wl_proxy*, wl_proxy_marshal_flags, (struct wl_proxy *proxy, uint32_t opcode, const struct wl_interface *interfac, uint32_t version, uint32_t flags, ...))
+SDL_WAYLAND_SYM(struct wl_proxy*, wl_proxy_marshal_array_flags, (struct wl_proxy *proxy, uint32_t opcode, const struct wl_interface *interface, uint32_t version,  uint32_t flags, union wl_argument *args))
+
 SDL_WAYLAND_INTERFACE(wl_seat_interface)
 SDL_WAYLAND_INTERFACE(wl_surface_interface)
 SDL_WAYLAND_INTERFACE(wl_shm_pool_interface)
@@ -118,6 +122,7 @@ SDL_WAYLAND_SYM(int, xkb_state_key_get_syms, (struct xkb_state *, xkb_keycode_t,
 SDL_WAYLAND_SYM(int, xkb_keysym_to_utf8, (xkb_keysym_t, char *, size_t) )
 SDL_WAYLAND_SYM(struct xkb_keymap *, xkb_keymap_new_from_string, (struct xkb_context *, const char *, enum xkb_keymap_format, enum xkb_keymap_compile_flags))
 SDL_WAYLAND_SYM(struct xkb_state *, xkb_state_new, (struct xkb_keymap *) )
+SDL_WAYLAND_SYM(int, xkb_keymap_key_repeats, (struct xkb_keymap *keymap, xkb_keycode_t key) );
 SDL_WAYLAND_SYM(void, xkb_keymap_unref, (struct xkb_keymap *) )
 SDL_WAYLAND_SYM(void, xkb_state_unref, (struct xkb_state *) )
 SDL_WAYLAND_SYM(void, xkb_context_unref, (struct xkb_context *) )

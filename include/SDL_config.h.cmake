@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -222,6 +222,7 @@
 #cmakedefine HAVE_INOTIFY_INIT 1
 #cmakedefine HAVE_INOTIFY_INIT1 1
 #cmakedefine HAVE_INOTIFY 1
+#cmakedefine HAVE_O_CLOEXEC 1
 
 /* Apple platforms might be building universal binaries, where Intel builds
    can use immintrin.h but other architectures can't. */
@@ -250,6 +251,7 @@
 
 #cmakedefine HAVE_MMDEVICEAPI_H @HAVE_MMDEVICEAPI_H@
 #cmakedefine HAVE_AUDIOCLIENT_H @HAVE_AUDIOCLIENT_H@
+#cmakedefine HAVE_TPCSHRD_H @HAVE_TPCSHRD_H@
 #cmakedefine HAVE_SENSORSAPI_H @HAVE_SENSORSAPI_H@
 
 #cmakedefine HAVE_XINPUT_GAMEPAD_EX @HAVE_XINPUT_GAMEPAD_EX@
@@ -275,6 +277,8 @@
 #cmakedefine SDL_VIDEO_DISABLED @SDL_VIDEO_DISABLED@
 #cmakedefine SDL_POWER_DISABLED @SDL_POWER_DISABLED@
 #cmakedefine SDL_FILESYSTEM_DISABLED @SDL_FILESYSTEM_DISABLED@
+#cmakedefine SDL_LOCALE_DISABLED @SDL_LOCALE_DISABLED@
+#cmakedefine SDL_MISC_DISABLED @SDL_MISC_DISABLED@
 
 /* Enable various audio drivers */
 #cmakedefine SDL_AUDIO_DRIVER_ALSA @SDL_AUDIO_DRIVER_ALSA@
@@ -314,6 +318,7 @@
 #cmakedefine SDL_AUDIO_DRIVER_WINMM @SDL_AUDIO_DRIVER_WINMM@
 #cmakedefine SDL_AUDIO_DRIVER_OS2 @SDL_AUDIO_DRIVER_OS2@
 #cmakedefine SDL_AUDIO_DRIVER_VITA @SDL_AUDIO_DRIVER_VITA@
+#cmakedefine SDL_AUDIO_DRIVER_PSP @SDL_AUDIO_DRIVER_PSP@
 
 /* Enable various input drivers */
 #cmakedefine SDL_INPUT_LINUXEV @SDL_INPUT_LINUXEV@
@@ -328,7 +333,6 @@
 #cmakedefine SDL_JOYSTICK_IOKIT @SDL_JOYSTICK_IOKIT@
 #cmakedefine SDL_JOYSTICK_MFI @SDL_JOYSTICK_MFI@
 #cmakedefine SDL_JOYSTICK_LINUX @SDL_JOYSTICK_LINUX@
-#cmakedefine SDL_JOYSTICK_WINMM @SDL_JOYSTICK_WINMM@
 #cmakedefine SDL_JOYSTICK_OS2 @SDL_JOYSTICK_OS2@
 #cmakedefine SDL_JOYSTICK_USBHID @SDL_JOYSTICK_USBHID@
 #cmakedefine SDL_HAVE_MACHINE_JOYSTICK_H @SDL_HAVE_MACHINE_JOYSTICK_H@
@@ -337,6 +341,7 @@
 #cmakedefine SDL_JOYSTICK_EMSCRIPTEN @SDL_JOYSTICK_EMSCRIPTEN@
 #cmakedefine SDL_JOYSTICK_VIRTUAL @SDL_JOYSTICK_VIRTUAL@
 #cmakedefine SDL_JOYSTICK_VITA @SDL_JOYSTICK_VITA@
+#cmakedefine SDL_JOYSTICK_PSP @SDL_JOYSTICK_PSP@
 #cmakedefine SDL_HAPTIC_DUMMY @SDL_HAPTIC_DUMMY@
 #cmakedefine SDL_HAPTIC_LINUX @SDL_HAPTIC_LINUX@
 #cmakedefine SDL_HAPTIC_IOKIT @SDL_HAPTIC_IOKIT@
@@ -367,6 +372,7 @@
 #cmakedefine SDL_THREAD_WINDOWS @SDL_THREAD_WINDOWS@
 #cmakedefine SDL_THREAD_OS2 @SDL_THREAD_OS2@
 #cmakedefine SDL_THREAD_VITA @SDL_THREAD_VITA@
+#cmakedefine SDL_THREAD_PSP @SDL_THREAD_PSP@
 
 /* Enable various timer systems */
 #cmakedefine SDL_TIMER_HAIKU @SDL_TIMER_HAIKU@
@@ -375,6 +381,7 @@
 #cmakedefine SDL_TIMER_WINDOWS @SDL_TIMER_WINDOWS@
 #cmakedefine SDL_TIMER_OS2 @SDL_TIMER_OS2@
 #cmakedefine SDL_TIMER_VITA @SDL_TIMER_VITA@
+#cmakedefine SDL_TIMER_PSP @SDL_TIMER_PSP@
 
 /* Enable various video drivers */
 #cmakedefine SDL_VIDEO_DRIVER_ANDROID @SDL_VIDEO_DRIVER_ANDROID@
@@ -395,6 +402,7 @@
 #cmakedefine SDL_VIDEO_DRIVER_OS2 @SDL_VIDEO_DRIVER_OS2@
 #cmakedefine SDL_VIDEO_DRIVER_QNX @SDL_VIDEO_DRIVER_QNX@
 #cmakedefine SDL_VIDEO_DRIVER_RISCOS @SDL_VIDEO_DRIVER_RISCOS@
+#cmakedefine SDL_VIDEO_DRIVER_PSP @SDL_VIDEO_DRIVER_PSP@
 
 #cmakedefine SDL_VIDEO_DRIVER_KMSDRM @SDL_VIDEO_DRIVER_KMSDRM@
 #cmakedefine SDL_VIDEO_DRIVER_KMSDRM_DYNAMIC @SDL_VIDEO_DRIVER_KMSDRM_DYNAMIC@
@@ -439,6 +447,7 @@
 #cmakedefine SDL_VIDEO_RENDER_DIRECTFB @SDL_VIDEO_RENDER_DIRECTFB@
 #cmakedefine SDL_VIDEO_RENDER_METAL @SDL_VIDEO_RENDER_METAL@
 #cmakedefine SDL_VIDEO_RENDER_VITA_GXM @SDL_VIDEO_RENDER_VITA_GXM@
+#cmakedefine SDL_VIDEO_RENDER_PSP @SDL_VIDEO_RENDER_PSP@
 
 /* Enable OpenGL support */
 #cmakedefine SDL_VIDEO_OPENGL @SDL_VIDEO_OPENGL@
@@ -469,6 +478,7 @@
 #cmakedefine SDL_POWER_EMSCRIPTEN @SDL_POWER_EMSCRIPTEN@
 #cmakedefine SDL_POWER_HARDWIRED @SDL_POWER_HARDWIRED@
 #cmakedefine SDL_POWER_VITA @SDL_POWER_VITA@
+#cmakedefine SDL_POWER_PSP @SDL_POWER_PSP@
 
 /* Enable system filesystem support */
 #cmakedefine SDL_FILESYSTEM_ANDROID @SDL_FILESYSTEM_ANDROID@
@@ -481,6 +491,13 @@
 #cmakedefine SDL_FILESYSTEM_EMSCRIPTEN @SDL_FILESYSTEM_EMSCRIPTEN@
 #cmakedefine SDL_FILESYSTEM_OS2 @SDL_FILESYSTEM_OS2@
 #cmakedefine SDL_FILESYSTEM_VITA @SDL_FILESYSTEM_VITA@
+#cmakedefine SDL_FILESYSTEM_PSP @SDL_FILESYSTEM_PSP@
+
+/* Enable misc subsystem */
+#cmakedefine SDL_MISC_DUMMY @SDL_MISC_DUMMY@
+
+/* Enable locale subsystem */
+#cmakedefine SDL_LOCALE_DUMMY @SDL_LOCALE_DUMMY@
 
 /* Enable assembly routines */
 #cmakedefine SDL_ASSEMBLY_ROUTINES @SDL_ASSEMBLY_ROUTINES@
@@ -493,6 +510,9 @@
 
 /* Enable dynamic libsamplerate support */
 #cmakedefine SDL_LIBSAMPLERATE_DYNAMIC @SDL_LIBSAMPLERATE_DYNAMIC@
+
+/* Enable ime support */
+#cmakedefine SDL_USE_IME @SDL_USE_IME@
 
 /* Platform specific definitions */
 #cmakedefine SDL_IPHONE_KEYBOARD @SDL_IPHONE_KEYBOARD@
